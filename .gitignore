@@ -1,0 +1,23 @@
+# Arquivos que o Maven gera quando compila o código (nunca enviar!)
+target/
+*.jar
+*.war
+
+# Arquivos temporários do Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Configurações de IDEs ou editores
+.idea/
+*.iml
+.vscode/
+
+# Configurações e temporários do Neovim / Vim (LazyVim)
+*.swp
+*.swo
+*~
+.netrwhist
+.nvimlog
+
+# Arquivos de log do próprio sistema (veremos no Dia 12)
+*.log
