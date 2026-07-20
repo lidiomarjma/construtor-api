@@ -19,6 +19,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Driver Oficial do MariaDB para o JDBC (O que faltava!) -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+        </dependency>
+      <!-- LOMBOK (Desativado temporariamente para estudo) 
+             Para ativar no futuro, basta remover os comentários <!-\- e -\-> 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        -->
+
     </dependencies>
 
     <properties>
