@@ -53,4 +53,61 @@ public class ClienteDAO {
       System.err.println("Erro ao salvar cliente: " + e.getMessage());
     }
   }
+
+  // Metodo de busca (GET)
+  public Cliente buscarPorId(Long id) {
+    String sql = "SELECT * FROM clientes WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, id);
+      ResultSet rs = stmt.executeQuery();
+
+      if (rs.next()) {
+        return new Cliente(
+            rs.getLong("id"),
+            rs.getString("nome"),
+            rs.getString("telefone"),
+            rs.getString("tipo_servico"));
+      }
+    } catch (SQLException e) {
+      System.err.println("Erro ao buscar cliente por ID: " + e.getMessage());
+    }
+    return null; // Retorna null se não encontrar o ID no banco.
+  }
+
+  // Método para atualizar, cliente existente (PUT)
+  public boolean atualizar(Cliente cliente) {
+    String sql = "UPDATE clientes SET nome = ?, telefone = ?, tipo_servico = ? WHERE id =?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, cliente.getNome());
+      stmt.setString(2, cliente.getTelefone());
+      stmt.setString(3, cliente.getTipoServico());
+      stmt.setLong(4, cliente.getId());
+
+      int linhasAfetadas = stmt.executeUpdate();
+      return linhasAfetadas > 0;
+    } catch (SQLException e) {
+      System.err.println("Erro ao atualizar cliente: " + e.getMessage());
+      return false;
+    }
+  }
+
+  // Método para deletar um cliente por ID (DELETE)
+  public boolean deletar(Long id) {
+    String sql = "DELETE FROM clientes WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, id);
+
+      int linhasAfetadas = stmt.executeUpdate();
+      return linhasAfetadas > 0;
+    } catch (SQLException e) {
+      System.err.println("Erro ao deletar cliente: " + e.getMessage());
+      return false;
+    }
+  }
 }

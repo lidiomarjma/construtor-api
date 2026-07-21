@@ -22,9 +22,11 @@ public class Cliente {
   private String telefone;
   private String tipoServico;
 
+  // Construtor Vazio
   public Cliente() {
   }
 
+  // Construtor Completo
   public Cliente(Long id, String nome, String telefone, String tipoServico) {
 
     this.id = id;
@@ -32,6 +34,13 @@ public class Cliente {
     this.telefone = telefone;
     this.tipoServico = tipoServico;
 
+  }
+
+  // Construtor SEM ID
+  public Cliente(String nome, String telefone, String tipoServico) {
+    this.nome = nome;
+    this.telefone = telefone;
+    this.tipoServico = tipoServico;
   }
 
   public Long getId() {
