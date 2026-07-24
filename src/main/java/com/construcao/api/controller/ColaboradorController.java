@@ -20,11 +20,17 @@ public class ColaboradorController {
 
   // POST - Criar novo Colaborador
   @PostMapping
-  public ResponseEntity<ColaboradorResponseDTO> criar(@Valid @RequestBody ColaboradorRequestDTO dto) {
-    Colaborador colaborador = new Colaborador(dto.getNome(), dto.getCpf(), dto.getFuncao());
-    colaboradorDAO.salvar(colaborador);
+  public ResponseEntity<ColaboradorResponseDTO> criar(@RequestBody @Valid ColaboradorRequestDTO dto) {
+    // 1. Converte DTO de entrada para Entidade
+    Colaborador novoColaborador = new Colaborador(null, dto.getNome(), dto.getCpf(), dto.getFuncao());
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(new ColaboradorResponseDTO(colaborador));
+    // 2. O DAO insere no MariaDB e atualiza o ID do objeto
+    Colaborador colaboradorSalvo = colaboradorDAO.salvar(novoColaborador);
+
+    // 3. Converte a Entidade salva para DTO de Resposta
+    ColaboradorResponseDTO response = new ColaboradorResponseDTO(colaboradorSalvo);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   // GET - Listar todos

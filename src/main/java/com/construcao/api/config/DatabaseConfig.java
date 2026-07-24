@@ -6,16 +6,19 @@ import java.sql.SQLException;
 
 public class DatabaseConfig {
 
-  private static final String URL = "jdbc:mariadb://localhost:3306/construtora_db";
-  private static final String USER = "dev_construtora";
-  private static final String PASSWORD = "senha_dev_123";
+  private static final String URL = System.getenv("DB_URL") != null
+      ? System.getenv("DB_URL")
+      : "jdbc:mariadb://localhost:3306/construtora_db";
+
+  private static final String USER = System.getenv("DB_USER") != null
+      ? System.getenv("DB_USER")
+      : "root";
+
+  private static final String PASS = System.getenv("DB_PASS") != null
+      ? System.getenv("DB_PASS")
+      : "";
 
   public static Connection getConnection() throws SQLException {
-    try {
-      Class.forName("org.mariadb.jdbc.Driver");
-      return DriverManager.getConnection(URL, USER, PASSWORD);
-    } catch (ClassNotFoundException e) {
-      throw new SQLException("Driver do MariaDB não foi encontrado no projeto!", e);
-    }
+    return DriverManager.getConnection(URL, USER, PASS);
   }
 }

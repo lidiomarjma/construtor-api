@@ -9,11 +9,17 @@ public class ColaboradorResponseDTO {
   private String cpf;
   private String funcao;
 
+  // Construtor padrão necessário para bibliotecas de serialização
+  public ColaboradorResponseDTO() {
+  }
+
   public ColaboradorResponseDTO(Colaborador colaborador) {
-    this.id = colaborador.getId();
-    this.nome = colaborador.getNome();
-    this.cpf = colaborador.getCpf();
-    this.funcao = colaborador.getFuncao();
+    if (colaborador != null) {
+      this.id = colaborador.getId();
+      this.nome = colaborador.getNome();
+      this.cpf = colaborador.getCpf();
+      this.funcao = colaborador.getFuncao();
+    }
   }
 
   public Long getId() {
@@ -28,7 +34,8 @@ public class ColaboradorResponseDTO {
     return cpf;
   }
 
-  public String getFuncso() {
+  // Corrigido de getFuncso() para getFuncao()
+  public String getFuncao() {
     return funcao;
   }
 }

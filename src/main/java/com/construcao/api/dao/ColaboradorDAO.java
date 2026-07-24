@@ -10,7 +10,7 @@ import java.util.List;
 public class ColaboradorDAO {
 
   // 1. SALVAR (INSERT)
-  public void salvar(Colaborador colaborador) {
+  public Colaborador salvar(Colaborador colaborador) {
     String sql = "INSERT INTO colaboradores (nome, cpf, funcao) VALUES (?, ?, ?)";
 
     try (Connection conn = DatabaseConfig.getConnection();
@@ -28,8 +28,11 @@ public class ColaboradorDAO {
         }
       }
 
+      return colaborador;
+
     } catch (SQLException e) {
       System.err.println("Erro ao salvar colaborador: " + e.getMessage());
+      throw new RuntimeException("Erro SQL ao salvar no MariaDB: " + e.getMessage(), e);
     }
   }
 

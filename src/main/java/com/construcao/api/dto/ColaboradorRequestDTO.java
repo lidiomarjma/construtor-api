@@ -16,7 +16,6 @@ public class ColaboradorRequestDTO {
   private String funcao;
 
   public ColaboradorRequestDTO() {
-
   }
 
   public ColaboradorRequestDTO(String nome, String cpf, String funcao) {
