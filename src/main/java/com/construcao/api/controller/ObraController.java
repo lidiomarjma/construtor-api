@@ -1,70 +1,49 @@
 package com.construcao.api.controller;
 
-import com.construcao.api.dao.ObraDAO;
 import com.construcao.api.dto.ObraRequestDTO;
 import com.construcao.api.dto.ObraResponseDTO;
-import com.construcao.api.model.Obra;
+import com.construcao.api.service.ObraService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/obras")
 public class ObraController {
 
-  private final ObraDAO obraDAO;
+  private final ObraService obraService;
 
-  public ObraController(ObraDAO obraDAO) {
-    this.obraDAO = obraDAO;
+  public ObraController(ObraService obraService) {
+    this.obraService = obraService;
   }
 
   @PostMapping
-  public ResponseEntity<ObraResponseDTO> criar(@RequestBody ObraRequestDTO dto) {
-    Obra obra = new Obra(null, dto.getNome(), dto.getEndereco(), dto.getOrcamento(), dto.getStatus());
-    Obra obraSalva = obraDAO.salvar(obra);
-    return ResponseEntity.status(HttpStatus.CREATED).body(new ObraResponseDTO(obraSalva));
+  public ResponseEntity<ObraResponseDTO> cadastrar(@Valid @RequestBody ObraRequestDTO dto) {
+    ObraResponseDTO response = obraService.salvar(dto);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @GetMapping
-  public ResponseEntity<List<ObraResponseDTO>> listarTodos() {
-    List<ObraResponseDTO> obras = obraDAO.buscarTodas()
-        .stream()
-        .map(ObraResponseDTO::new)
-        .collect(Collectors.toList());
-    return ResponseEntity.ok(obras);
+  public ResponseEntity<List<ObraResponseDTO>> listarTodas() {
+    return ResponseEntity.ok(obraService.listarTodas());
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<ObraResponseDTO> buscarPorId(@PathVariable Long id) {
-    Optional<Obra> obraOptional = obraDAO.buscarPorId(id);
-    if (obraOptional.isPresent()) {
-      return ResponseEntity.ok(new ObraResponseDTO(obraOptional.get()));
-    }
-    return ResponseEntity.notFound().build();
+    return ResponseEntity.ok(obraService.buscarPorId(id));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ObraResponseDTO> atualizar(@PathVariable Long id, @RequestBody ObraRequestDTO dto) {
-    Obra obraParaAtualizar = new Obra(id, dto.getNome(), dto.getEndereco(), dto.getOrcamento(), dto.getStatus());
-    boolean atualizado = obraDAO.atualizar(id, obraParaAtualizar);
-
-    if (atualizado) {
-      return ResponseEntity.ok(new ObraResponseDTO(obraParaAtualizar));
-    }
-    return ResponseEntity.notFound().build();
+  public ResponseEntity<ObraResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ObraRequestDTO dto) {
+    return ResponseEntity.ok(obraService.atualizar(id, dto));
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deletar(@PathVariable Long id) {
-    boolean deletado = obraDAO.deletar(id);
-    if (deletado) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.notFound().build();
+    obraService.deletar(id);
+    return ResponseEntity.noContent().build();
   }
-
 }

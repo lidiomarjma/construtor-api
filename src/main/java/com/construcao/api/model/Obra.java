@@ -9,17 +9,15 @@ public class Obra {
   private String endereco;
   private BigDecimal orcamento;
   private String status;
+  private Long clienteId; // Chave Estrangeira (cliente_id)
 
-  public Obra() {
-
-  }
-
-  public Obra(Long id, String nome, String endereco, BigDecimal orcamento, String status) {
+  public Obra(Long id, String nome, String endereco, BigDecimal orcamento, String status, Long clienteId) {
     this.id = id;
     this.nome = nome;
     this.endereco = endereco;
     this.orcamento = orcamento;
     this.status = status;
+    this.clienteId = clienteId;
   }
 
   public Long getId() {
@@ -60,5 +58,13 @@ public class Obra {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  public Long getClienteId() {
+    return clienteId;
+  }
+
+  public void setClienteId(Long clienteId) {
+    this.clienteId = clienteId;
   }
 }

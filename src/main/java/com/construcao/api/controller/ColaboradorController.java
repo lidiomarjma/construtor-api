@@ -1,89 +1,50 @@
 package com.construcao.api.controller;
 
-import com.construcao.api.dao.ColaboradorDAO;
 import com.construcao.api.dto.ColaboradorRequestDTO;
 import com.construcao.api.dto.ColaboradorResponseDTO;
-import com.construcao.api.model.Colaborador;
+import com.construcao.api.service.ColaboradorService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/colaboradores")
 public class ColaboradorController {
 
-  private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
+  private final ColaboradorService colaboradorService;
 
-  // POST - Criar novo Colaborador
+  public ColaboradorController(ColaboradorService colaboradorService) {
+    this.colaboradorService = colaboradorService;
+  }
+
   @PostMapping
-  public ResponseEntity<ColaboradorResponseDTO> criar(@RequestBody @Valid ColaboradorRequestDTO dto) {
-    // 1. Converte DTO de entrada para Entidade
-    Colaborador novoColaborador = new Colaborador(null, dto.getNome(), dto.getCpf(), dto.getFuncao());
-
-    // 2. O DAO insere no MariaDB e atualiza o ID do objeto
-    Colaborador colaboradorSalvo = colaboradorDAO.salvar(novoColaborador);
-
-    // 3. Converte a Entidade salva para DTO de Resposta
-    ColaboradorResponseDTO response = new ColaboradorResponseDTO(colaboradorSalvo);
-
+  public ResponseEntity<ColaboradorResponseDTO> criar(@Valid @RequestBody ColaboradorRequestDTO dto) {
+    ColaboradorResponseDTO response = colaboradorService.criar(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  // GET - Listar todos
   @GetMapping
   public ResponseEntity<List<ColaboradorResponseDTO>> listarTodos() {
-    List<Colaborador> colaboradores = colaboradorDAO.listarTodos();
-    List<ColaboradorResponseDTO> response = colaboradores.stream()
-        .map(ColaboradorResponseDTO::new)
-        .collect(Collectors.toList());
-
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(colaboradorService.listarTodos());
   }
 
-  // GET - Buscar por ID
   @GetMapping("/{id}")
   public ResponseEntity<ColaboradorResponseDTO> buscarPorId(@PathVariable Long id) {
-    Colaborador colaborador = colaboradorDAO.buscarPorId(id);
-
-    if (colaborador == null) {
-      return ResponseEntity.notFound().build();
-    }
-
-    return ResponseEntity.ok(new ColaboradorResponseDTO(colaborador));
+    return ResponseEntity.ok(colaboradorService.buscarPorId(id));
   }
 
-  // PUT - Atualizar
   @PutMapping("/{id}")
   public ResponseEntity<ColaboradorResponseDTO> atualizar(@PathVariable Long id,
       @Valid @RequestBody ColaboradorRequestDTO dto) {
-    Colaborador colaboradorExistente = colaboradorDAO.buscarPorId(id);
-
-    if (colaboradorExistente == null) {
-      return ResponseEntity.notFound().build();
-    }
-
-    colaboradorExistente.setNome(dto.getNome());
-    colaboradorExistente.setCpf(dto.getCpf());
-    colaboradorExistente.setFuncao(dto.getFuncao());
-
-    colaboradorDAO.atualizar(colaboradorExistente);
-
-    return ResponseEntity.ok(new ColaboradorResponseDTO(colaboradorExistente));
+    return ResponseEntity.ok(colaboradorService.atualizar(id, dto));
   }
 
-  // DELETE - Deletar
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deletar(@PathVariable Long id) {
-    boolean deletado = colaboradorDAO.deletar(id);
-
-    if (!deletado) {
-      return ResponseEntity.notFound().build();
-    }
-
+    colaboradorService.deletar(id);
     return ResponseEntity.noContent().build();
   }
 }

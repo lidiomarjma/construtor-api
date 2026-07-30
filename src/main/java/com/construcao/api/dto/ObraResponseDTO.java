@@ -11,6 +11,7 @@ public class ObraResponseDTO {
   private String endereco;
   private BigDecimal orcamento;
   private String status;
+  private Long clienteId;
 
   public ObraResponseDTO(Obra obra) {
     this.id = obra.getId();
@@ -18,6 +19,7 @@ public class ObraResponseDTO {
     this.endereco = obra.getEndereco();
     this.orcamento = obra.getOrcamento();
     this.status = obra.getStatus();
+    this.clienteId = obra.getClienteId();
   }
 
   public Long getId() {
@@ -38,5 +40,9 @@ public class ObraResponseDTO {
 
   public String getStatus() {
     return status;
+  }
+
+  public Long getClienteId() {
+    return clienteId;
   }
 }

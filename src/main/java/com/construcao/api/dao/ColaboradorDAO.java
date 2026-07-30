@@ -1,128 +1,71 @@
 package com.construcao.api.dao;
 
-import com.construcao.api.config.DatabaseConfig;
 import com.construcao.api.model.Colaborador;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
+import java.util.Optional;
 
+@Repository
 public class ColaboradorDAO {
 
-  // 1. SALVAR (INSERT)
+  private final JdbcTemplate jdbcTemplate;
+
+  public ColaboradorDAO(JdbcTemplate jdbcTemplate) {
+    this.jdbcTemplate = jdbcTemplate;
+  }
+
+  private final RowMapper<Colaborador> colaboradorRowMapper = (rs, rowNum) -> new Colaborador(
+      rs.getLong("id"),
+      rs.getString("nome"),
+      rs.getString("cpf"),
+      rs.getString("funcao"));
+
   public Colaborador salvar(Colaborador colaborador) {
     String sql = "INSERT INTO colaboradores (nome, cpf, funcao) VALUES (?, ?, ?)";
+    KeyHolder keyHolder = new GeneratedKeyHolder();
 
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      ps.setString(1, colaborador.getNome());
+      ps.setString(2, colaborador.getCpf());
+      ps.setString(3, colaborador.getFuncao());
+      return ps;
+    }, keyHolder);
 
-      stmt.setString(1, colaborador.getNome());
-      stmt.setString(2, colaborador.getCpf());
-      stmt.setString(3, colaborador.getFuncao());
-
-      stmt.executeUpdate();
-
-      try (ResultSet rs = stmt.getGeneratedKeys()) {
-        if (rs.next()) {
-          colaborador.setId(rs.getLong(1));
-        }
-      }
-
-      return colaborador;
-
-    } catch (SQLException e) {
-      System.err.println("Erro ao salvar colaborador: " + e.getMessage());
-      throw new RuntimeException("Erro SQL ao salvar no MariaDB: " + e.getMessage(), e);
+    if (keyHolder.getKey() != null) {
+      colaborador.setId(keyHolder.getKey().longValue());
     }
+    return colaborador;
   }
 
-  // 2. LISTAR TODOS (SELECT)
   public List<Colaborador> listarTodos() {
-    List<Colaborador> colaboradores = new ArrayList<>();
     String sql = "SELECT * FROM colaboradores";
-
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery()) {
-
-      while (rs.next()) {
-        Colaborador c = new Colaborador(
-            rs.getLong("id"),
-            rs.getString("nome"),
-            rs.getString("cpf"),
-            rs.getString("funcao"));
-        colaboradores.add(c);
-      }
-
-    } catch (SQLException e) {
-      System.err.println("Erro ao listar colaboradores: " + e.getMessage());
-    }
-
-    return colaboradores;
+    return jdbcTemplate.query(sql, colaboradorRowMapper);
   }
 
-  // 3. BUSCAR POR ID (SELECT WHERE ID)
-  public Colaborador buscarPorId(Long id) {
+  public Optional<Colaborador> buscarPorId(Long id) {
     String sql = "SELECT * FROM colaboradores WHERE id = ?";
-
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-      stmt.setLong(1, id);
-
-      try (ResultSet rs = stmt.executeQuery()) {
-        if (rs.next()) {
-          return new Colaborador(
-              rs.getLong("id"),
-              rs.getString("nome"),
-              rs.getString("cpf"),
-              rs.getString("funcao"));
-        }
-      }
-
-    } catch (SQLException e) {
-      System.err.println("Erro ao buscar colaborador por ID: " + e.getMessage());
-    }
-
-    return null;
+    List<Colaborador> resultados = jdbcTemplate.query(sql, colaboradorRowMapper, id);
+    return resultados.stream().findFirst();
   }
 
-  // 4. ATUALIZAR (UPDATE)
-  public boolean atualizar(Colaborador colaborador) {
+  public boolean atualizar(Long id, Colaborador colaborador) {
     String sql = "UPDATE colaboradores SET nome = ?, cpf = ?, funcao = ? WHERE id = ?";
-
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-      stmt.setString(1, colaborador.getNome());
-      stmt.setString(2, colaborador.getCpf());
-      stmt.setString(3, colaborador.getFuncao());
-      stmt.setLong(4, colaborador.getId());
-
-      int linhasAfetadas = stmt.executeUpdate();
-      return linhasAfetadas > 0;
-
-    } catch (SQLException e) {
-      System.err.println("Erro ao atualizar colaborador: " + e.getMessage());
-      return false;
-    }
+    int linhasAfetadas = jdbcTemplate.update(sql, colaborador.getNome(), colaborador.getCpf(), colaborador.getFuncao(),
+        id);
+    return linhasAfetadas > 0;
   }
 
-  // 5. DELETAR (DELETE)
   public boolean deletar(Long id) {
     String sql = "DELETE FROM colaboradores WHERE id = ?";
-
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-      stmt.setLong(1, id);
-
-      int linhasAfetadas = stmt.executeUpdate();
-      return linhasAfetadas > 0;
-
-    } catch (SQLException e) {
-      System.err.println("Erro ao deletar colaborador: " + e.getMessage());
-      return false;
-    }
+    int linhasAfetadas = jdbcTemplate.update(sql, id);
+    return linhasAfetadas > 0;
   }
 }
