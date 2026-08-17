@@ -1,83 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Construtor - Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-
-<body class="bg-slate-100 min-h-screen text-slate-800 p-8">
-
-  <div class="max-w-4xl mx-auto">
-    <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900">🏗️ Painel de Obras</h1>
-        <p class="text-slate-500 text-sm">Integração com Spring Boot API</p>
-      </div>
-      <button onclick="carregarObras()"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-        🔄 Atualizar Dados
-      </button>
-    </header>
-
-    <main>
-      <div id="obras-container" class="grid gap-4 transition-opacity duration-200">
-        <p class="text-slate-400 italic">Carregando obras da API...</p>
-      </div>
-    </main>
-  </div>
-
-  <script>
-    async function carregarObras() {
-      const container = document.getElementById('obras-container');
-      container.style.opacity = '0.4';
-
-      try {
-        const resposta = await fetch('http://localhost:8080/obras');
-        if (!resposta.ok) throw new Error('Erro ao buscar obras');
-
-        const obras = await resposta.json();
-
-        if (obras.length === 0) {
-          container.innerHTML = `<p class="text-slate-500">Nenhuma obra cadastrada.</p>`;
-          return;
-        }
-
-        container.innerHTML = obras.map(obra => `
-          <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center hover:border-blue-300 transition-all">
-            <div>
-              <span class="text-xs font-mono font-bold text-slate-400 uppercase">ID #${obra.id}</span>
-              <h2 class="text-xl font-bold text-slate-800 mt-1">${obra.nome}</h2>
-              <p class="text-slate-500 text-sm mt-1">📍 ${obra.endereco}</p>
-              <p class="text-emerald-600 font-semibold text-sm mt-2">
-                💰 Orçamento: R$ ${Number(obra.orcamento).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-              </p>
-            </div>
-            <div>
-              <span class="px-3 py-1 rounded-full text-xs font-bold ${obra.status === 'EM_ANDAMENTO' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
-          }">
-                ${obra.status}
-              </span>
-            </div>
-          </div>
-        `).join('');
-
-      } catch (erro) {
-        console.error('Erro:', erro);
-        container.innerHTML = `
-          <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl">
-            ⚠️ Não foi possível conectar ao servidor. Verifique se o Spring Boot está rodando.
-          </div>
-        `;
-      } finally {
-        container.style.opacity = '1';
-      }
-    }
-
-    carregarObras();
-  </script>
-</body>
-
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
