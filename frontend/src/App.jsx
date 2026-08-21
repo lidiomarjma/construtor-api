@@ -75,8 +75,8 @@ export default function App() {
               <div>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold ${obra.status === 'EM_ANDAMENTO'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                     }`}
                 >
                   {obra.status}
