@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { buscarObrasAPI, criarObraAPI, deletarObraAPI, atualizarObraAPI } from './services/api';
+import { buscarObrasAPI, criarObraAPI, deletarObraAPI, atualizarObraAPI, buscarClientesAPI } from './services/api';
 import ObraForm from './components/ObraForm';
 import ObraCard from './components/ObraCard';
 import ClienteForm from './components/ClienteForm';
+import ClienteCard from './components/ClienteCard';
 
 export default function App() {
   const [obras, setObras] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [carregando, setCarregando] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState('obras');
 
@@ -21,8 +23,18 @@ export default function App() {
     }
   }
 
+  async function carregarClientes() {
+    try {
+      const dados = await buscarClientesAPI();
+      setClientes(dados);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+    }
+  }
+
   useEffect(() => {
     carregarObras();
+    carregarClientes();
   }, []);
 
   async function handleCriarObra(novaObra) {
@@ -33,21 +45,19 @@ export default function App() {
       return true;
     } catch (error) {
       console.error('Erro ao criar obra:', error);
-      alert('Erro ao salvar obra. Verifique se o cliente selecionado é válido.');
+      alert('Erro ao salvar obra.');
       return false;
     } finally {
       setCarregando(false);
     }
   }
 
-  // FUNÇÃO DE DELETAR OBRA
   async function handleDeletarObra(id) {
     try {
       await deletarObraAPI(id);
-      await carregarObras(); // Recarrega a lista atualizada
+      await carregarObras();
     } catch (error) {
       console.error('Erro ao excluir obra:', error);
-      alert('Erro ao excluir obra.');
     }
   }
 
@@ -72,7 +82,7 @@ export default function App() {
           </div>
 
           <button
-            onClick={carregarObras}
+            onClick={() => { carregarObras(); carregarClientes(); }}
             className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2 rounded-xl border border-slate-700 transition-all cursor-pointer"
           >
             🔄 Atualizar Dados
@@ -84,8 +94,8 @@ export default function App() {
           <button
             onClick={() => setAbaAtiva('obras')}
             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${abaAtiva === 'obras'
-              ? 'bg-blue-600 text-white shadow-lg'
-              : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
               }`}
           >
             🚧 Gestão de Obras
@@ -93,41 +103,39 @@ export default function App() {
           <button
             onClick={() => setAbaAtiva('clientes')}
             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${abaAtiva === 'clientes'
-              ? 'bg-blue-600 text-white shadow-lg'
-              : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
               }`}
           >
             👤 Gestão de Clientes
           </button>
         </div>
 
-        {/* CONTEÚDO DA ABA SELECIONADA */}
+        {/* CONTEÚDO */}
         {abaAtiva === 'obras' ? (
           <div>
             <ObraForm onCriarObra={handleCriarObra} carregando={carregando} />
-
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              📋 Catálogo de Obras ({obras.length})
-            </h2>
-
-            {carregando && obras.length === 0 ? (
-              <p className="text-slate-400 text-sm">Carregando obras...</p>
-            ) : obras.length === 0 ? (
-              <p className="text-slate-500 text-sm bg-slate-800/50 p-6 rounded-2xl text-center border border-slate-800">
-                Nenhuma obra cadastrada ainda.
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {obras.map((obra) => (
-                  <ObraCard key={obra.id} obra={obra} onDeletarObra={handleDeletarObra}
-                    onAtualizarStatus={handleAtualizarStatus} />
-                ))}
-              </div>
-            )}
+            <h2 className="text-xl font-bold text-white mb-4">📋 Catálogo de Obras ({obras.length})</h2>
+            <div className="grid grid-cols-1 gap-4">
+              {obras.map((obra) => (
+                <ObraCard
+                  key={obra.id}
+                  obra={obra}
+                  onDeletarObra={handleDeletarObra}
+                  onAtualizarStatus={handleAtualizarStatus}
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <div>
-            <ClienteForm />
+            <ClienteForm onClienteCriado={carregarClientes} />
+            <h2 className="text-xl font-bold text-white mb-4">👥 Clientes Cadastrados ({clientes.length})</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {clientes.map((cliente) => (
+                <ClienteCard key={cliente.id} cliente={cliente} />
+              ))}
+            </div>
           </div>
         )}
       </div>
