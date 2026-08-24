@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { buscarClientesAPI } from '../services/api';
 
 export default function ObraForm({ onCriarObra, carregando }) {
   const [nome, setNome] = useState('');
@@ -7,8 +8,34 @@ export default function ObraForm({ onCriarObra, carregando }) {
   const [status, setStatus] = useState('EM_ANDAMENTO');
   const [clienteId, setClienteId] = useState('');
 
+  // Estados para carregar e armazenar a lista de clientes
+  const [clientes, setClientes] = useState([]);
+  const [carregandoClientes, setCarregandoClientes] = useState(true);
+
+  // Busca a lista de clientes ao carregar o componente
+  useEffect(() => {
+    async function carregarListaClientes() {
+      try {
+        setCarregandoClientes(true);
+        const dados = await buscarClientesAPI();
+        setClientes(dados);
+
+        // Se houver clientes cadastrados, seleciona o primeiro por padrão
+        if (dados.length > 0) {
+          setClienteId(dados[0].id);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+      } finally {
+        setCarregandoClientes(false);
+      }
+    }
+
+    carregarListaClientes();
+  }, []);
+
   async function handleSubmit(event) {
-    event.preventDefault();
+    event.preventDefault(); // Impede o reload padrão da página HTML
     if (!nome || !endereco || !orcamento || !clienteId) return;
 
     const novaObra = {
@@ -21,11 +48,15 @@ export default function ObraForm({ onCriarObra, carregando }) {
 
     const sucesso = await onCriarObra(novaObra);
     if (sucesso) {
+      // Limpa os campos após o envio bem-sucedido
       setNome('');
       setEndereco('');
       setOrcamento('');
       setStatus('EM_ANDAMENTO');
-      setClienteId('');
+      // Mantém o primeiro cliente selecionado se a lista não estiver vazia
+      if (clientes.length > 0) {
+        setClienteId(clientes[0].id);
+      }
     }
   }
 
@@ -44,6 +75,7 @@ export default function ObraForm({ onCriarObra, carregando }) {
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"
           />
         </div>
+
         <div>
           <label className="block text-xs font-semibold text-slate-400 mb-1">Endereço</label>
           <input
@@ -55,6 +87,7 @@ export default function ObraForm({ onCriarObra, carregando }) {
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"
           />
         </div>
+
         <div>
           <label className="block text-xs font-semibold text-slate-400 mb-1">Orçamento (R$)</label>
           <input
@@ -67,17 +100,31 @@ export default function ObraForm({ onCriarObra, carregando }) {
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"
           />
         </div>
+
+        {/* SELECT DINÂMICO DE CLIENTES */}
         <div>
-          <label className="block text-xs font-semibold text-slate-400 mb-1">ID do Cliente Existente</label>
-          <input
-            type="number"
+          <label className="block text-xs font-semibold text-slate-400 mb-1">Cliente Responsável</label>
+          <select
             required
             value={clienteId}
             onChange={(e) => setClienteId(e.target.value)}
-            placeholder="Ex: 1 ou o ID do cliente retornado"
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"
-          />
+            disabled={carregandoClientes || clientes.length === 0}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500 disabled:opacity-50"
+          >
+            {carregandoClientes ? (
+              <option value="">Carregando clientes...</option>
+            ) : clientes.length === 0 ? (
+              <option value="">Nenhum cliente cadastrado no sistema</option>
+            ) : (
+              clientes.map((cliente) => (
+                <option key={cliente.id} value={cliente.id}>
+                  {cliente.nome} {cliente.email ? `(${cliente.email})` : ''}
+                </option>
+              ))
+            )}
+          </select>
         </div>
+
         <div className="md:col-span-2">
           <label className="block text-xs font-semibold text-slate-400 mb-1">Status</label>
           <select
@@ -91,13 +138,20 @@ export default function ObraForm({ onCriarObra, carregando }) {
           </select>
         </div>
       </div>
+
       <button
         type="submit"
-        disabled={carregando}
+        disabled={carregando || carregandoClientes || clientes.length === 0}
         className="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 rounded-xl transition-all shadow-md cursor-pointer"
       >
         {carregando ? 'Salvando...' : 'Salvar Obra'}
       </button>
+
+      {clientes.length === 0 && !carregandoClientes && (
+        <p className="text-xs text-amber-400 mt-2 text-center">
+          ⚠️ Crie um cliente antes de cadastrar uma nova obra.
+        </p>
+      )}
     </form>
   );
 }
