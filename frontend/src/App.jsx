@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
-import { buscarObrasAPI, criarObraAPI, deletarObraAPI, atualizarObraAPI, buscarClientesAPI } from './services/api';
+import {
+  buscarObrasAPI, criarObraAPI, deletarObraAPI, atualizarObraAPI, buscarClientesAPI, atualizarClienteAPI,
+  deletarClienteAPI
+} from './services/api';
 import ObraForm from './components/ObraForm';
 import ObraCard from './components/ObraCard';
 import ClienteForm from './components/ClienteForm';
 import ClienteCard from './components/ClienteCard';
 import DashboardMetrics from './components/DashboardMetrics';
+
 
 export default function App() {
   const [obras, setObras] = useState([]);
@@ -75,6 +79,26 @@ export default function App() {
     }
   }
 
+  async function handleAtualizarCliente(id, dadosAtualizados) {
+    try {
+      await atualizarClienteAPI(id, dadosAtualizados);
+      await carregarClientes();
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      alert('Erro ao atualizar dados do cliente.');
+    }
+  }
+
+  async function handleDeletarCliente(id) {
+    try {
+      await deletarClienteAPI(id);
+      await carregarClientes();
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      alert('Não foi possível excluir o cliente. Verifique se ele possui obras associadas.');
+    }
+  }
+
   // Lógica de filtragem de obras
   const obrasFiltradas = obras.filter((obra) => {
     const atendeBusca =
@@ -112,8 +136,8 @@ export default function App() {
           <button
             onClick={() => setAbaAtiva('obras')}
             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${abaAtiva === 'obras'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              ? 'bg-blue-600 text-white shadow-lg'
+              : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
               }`}
           >
             🚧 Gestão de Obras
@@ -121,8 +145,8 @@ export default function App() {
           <button
             onClick={() => setAbaAtiva('clientes')}
             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${abaAtiva === 'clientes'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              ? 'bg-blue-600 text-white shadow-lg'
+              : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
               }`}
           >
             👤 Gestão de Clientes
@@ -188,7 +212,9 @@ export default function App() {
             <h2 className="text-xl font-bold text-white mb-4">👥 Clientes Cadastrados ({clientes.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {clientes.map((cliente) => (
-                <ClienteCard key={cliente.id} cliente={cliente} />
+                <ClienteCard key={cliente.id} cliente={cliente}
+                  onAtualizar={handleAtualizarCliente}
+                  onDeletar={handleDeletarCliente} />
               ))}
             </div>
           </div>

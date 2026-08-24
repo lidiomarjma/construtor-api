@@ -17,6 +17,18 @@ export async function criarObraAPI(dadosObra) {
   return response.data;
 }
 
+// DELETE /obras/{id} -> Exclui uma obra pelo ID
+export async function deletarObraAPI(id) {
+  const response = await api.delete(`/obras/${id}`);
+  return response.data;
+}
+
+// PUT /obras/{id} -> Atualiza os dados de uma obra
+export async function atualizarObraAPI(id, dadosObra) {
+  const response = await api.put(`/obras/${id}`, dadosObra);
+  return response.data;
+}
+
 // GET /clientes
 export async function buscarClientesAPI() {
   const response = await api.get('/clientes');
@@ -29,14 +41,14 @@ export async function cadastrarClienteAPI(novoCliente) {
   return response.data;
 }
 
-// DELETE /obras/{id} -> Exclui uma obra pelo ID
-export async function deletarObraAPI(id) {
-  const response = await api.delete(`/obras/${id}`);
+// PUT /clientes/{id} -> Atualiza dados do cliente
+export async function atualizarClienteAPI(id, dadosCliente) {
+  const response = await api.put(`/clientes/${id}`, dadosCliente);
   return response.data;
 }
 
-// PUT /obras/{id} -> Atualiza os dados de uma obra
-export async function atualizarObraAPI(id, dadosObra) {
-  const response = await api.put(`/obras/${id}`, dadosObra);
+// DELETE /clientes/{id} -> Exclui um cliente pelo ID
+export async function deletarClienteAPI(id) {
+  const response = await api.delete(`/clientes/${id}`);
   return response.data;
 }
